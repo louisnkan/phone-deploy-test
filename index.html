@@ -1,0 +1,795 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101610">
+  <meta name="description" content="Test your tapping speed in Snail Tap Challenge. You have 10 seconds. Can you become a Legend?">
+  <title>Snail Tap Challenge</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101610;
+      --surface: #19221a;
+      --surface-light: #222d23;
+      --green: #9be564;
+      --green-dark: #203a20;
+      --text: #f2f6ee;
+      --muted: #a3afa0;
+      --border: #344332;
+      --danger: #ff8d82;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+      touch-action: manipulation;
+      overscroll-behavior: none;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: max(20px, env(safe-area-inset-top)) 18px
+        max(14px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background:
+        radial-gradient(ellipse at 50% 0%, #243921 0%, transparent 48%),
+        var(--bg);
+      color: var(--text);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:focus-visible {
+      outline: 3px solid #d0ffad;
+      outline-offset: 4px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 440px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .header {
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--green);
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px #9be56480;
+    }
+
+    h1 {
+      margin: 12px 0 8px;
+      font-size: clamp(2rem, 9vw, 3rem);
+      line-height: 1.08;
+      letter-spacing: -0.065em;
+      font-weight: 850;
+    }
+
+    h1 span {
+      color: var(--green);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.6;
+    }
+
+    .game-card {
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: linear-gradient(155deg, #1d281d, #151d16 75%);
+      box-shadow: 0 22px 65px #00000030;
+    }
+
+    .timer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .small-label {
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .timer {
+      color: var(--green);
+      font-size: 1.55rem;
+      line-height: 1;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer.urgent {
+      color: var(--danger);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: #303b30;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+      transform-origin: left center;
+      transition: width 0.08s linear;
+    }
+
+    .tap-area {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+    }
+
+    .tap-button {
+      position: relative;
+      width: min(66vw, 228px);
+      height: min(66vw, 228px);
+      max-width: 228px;
+      max-height: 228px;
+      min-width: 190px;
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 8px solid #334b2d;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 30%, #c0ff91, #8bd952 65%, #69b83d);
+      color: #14220f;
+      box-shadow:
+        0 0 0 8px #9be56410,
+        0 12px 0 #47772e,
+        0 20px 36px #00000035;
+      transition: transform 0.07s, box-shadow 0.07s, filter 0.15s;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .tap-button:active,
+    .tap-button.pressed {
+      transform: translateY(7px) scale(0.975);
+      box-shadow:
+        0 0 0 8px #9be56410,
+        0 4px 0 #47772e,
+        0 9px 18px #00000030;
+    }
+
+    .tap-button:disabled {
+      cursor: default;
+      filter: saturate(0.6);
+    }
+
+    .tap-button .tap-icon {
+      font-size: 2.8rem;
+      line-height: 1;
+    }
+
+    .tap-button .tap-word {
+      font-size: 1.4rem;
+      font-weight: 950;
+      letter-spacing: 0.06em;
+    }
+
+    .tap-button .tap-hint {
+      font-size: 0.72rem;
+      font-weight: 750;
+      opacity: 0.8;
+    }
+
+    .instruction {
+      min-height: 22px;
+      margin: 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 27px;
+    }
+
+    .stat {
+      min-width: 0;
+      padding: 14px 5px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #11191180;
+    }
+
+    .stat-value {
+      display: block;
+      overflow-wrap: anywhere;
+      color: var(--text);
+      font-size: clamp(1.2rem, 5vw, 1.65rem);
+      line-height: 1.2;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-label {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.65rem;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.045em;
+    }
+
+    .result {
+      display: none;
+      padding: 19px;
+      border: 1px solid #526e42;
+      border-radius: 20px;
+      background: #263523;
+      text-align: center;
+      animation: appear 0.3s ease-out;
+    }
+
+    .result.visible {
+      display: block;
+    }
+
+    .result-label {
+      margin: 0 0 6px;
+      color: var(--green);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .result h2 {
+      margin: 0;
+      font-size: 1.65rem;
+      letter-spacing: -0.04em;
+    }
+
+    .result-score {
+      margin: 7px 0;
+      font-size: 1.02rem;
+      font-weight: 700;
+    }
+
+    .result-message {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+
+    .best-note {
+      margin: 10px 0 0;
+      color: var(--green);
+      font-size: 0.8rem;
+      font-weight: 750;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .action-button {
+      min-height: 49px;
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface-light);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 800;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .action-button:active {
+      transform: scale(0.98);
+    }
+
+    .action-button.primary {
+      border-color: var(--green);
+      background: var(--green);
+      color: #172412;
+    }
+
+    .action-button:hover:not(:disabled) {
+      filter: brightness(1.08);
+    }
+
+    .action-button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .privacy {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.76rem;
+      line-height: 1.5;
+    }
+
+    .privacy svg {
+      flex-shrink: 0;
+      width: 15px;
+      height: 15px;
+    }
+
+    footer {
+      padding: 25px 0 4px;
+      color: #84917f;
+      text-align: center;
+      font-size: 0.76rem;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(7px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    @media (max-height: 760px) {
+      .app { gap: 16px; }
+      .header h1 { font-size: 2.1rem; }
+      .game-card { padding: 17px; }
+      .tap-button {
+        width: 180px;
+        height: 180px;
+        min-width: 180px;
+        min-height: 180px;
+      }
+      .stats { margin-top: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="eyebrow">
+        <span class="status-dot" aria-hidden="true"></span>
+        THE 10-SECOND TEST
+      </div>
+      <h1>Snail Tap <span>Challenge</span></h1>
+      <p class="subtitle">Tiny snail. Serious speed.<br>How fast can your fingers go?</p>
+    </header>
+
+    <section class="game-card" aria-label="Tap challenge game">
+      <div class="timer-row">
+        <span class="small-label">Time remaining</span>
+        <span class="timer" id="timer" role="timer" aria-live="off">10.0s</span>
+      </div>
+
+      <div
+        class="progress-track"
+        id="progressTrack"
+        role="progressbar"
+        aria-label="Time remaining"
+        aria-valuemin="0"
+        aria-valuemax="10"
+        aria-valuenow="10"
+      >
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+
+      <div class="tap-area">
+        <button
+          class="tap-button"
+          id="tapButton"
+          type="button"
+          aria-label="Tap to start and count taps"
+        >
+          <span class="tap-icon" aria-hidden="true">🐌</span>
+          <span class="tap-word" id="tapWord">TAP!</span>
+          <span class="tap-hint" id="tapHint">10 SECONDS</span>
+        </button>
+        <p class="instruction" id="instruction" aria-live="polite">
+          Tap the snail to start your challenge.
+        </p>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value" id="tapCount">0</span>
+          <span class="stat-label">Total taps</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="tapsPerSecond">0.0</span>
+          <span class="stat-label">Taps / sec</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="bestScore">—</span>
+          <span class="stat-label">Personal best</span>
+        </div>
+      </div>
+
+      <section class="result" id="result" aria-live="polite" aria-atomic="true">
+        <p class="result-label">Challenge complete</p>
+        <h2 id="rankTitle">Sleepy Snail</h2>
+        <p class="result-score" id="resultScore">0 taps in 10 seconds</p>
+        <p class="result-message" id="resultMessage"></p>
+        <p class="best-note" id="bestNote"></p>
+      </section>
+
+      <div class="actions">
+        <button class="action-button primary" id="retryButton" type="button">
+          ↻ Try again
+        </button>
+        <button class="action-button" id="shareButton" type="button" disabled>
+          <span aria-hidden="true">↗</span> Share on WhatsApp
+        </button>
+      </div>
+    </section>
+
+    <div class="privacy">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+        aria-hidden="true">
+        <rect x="5" y="10" width="14" height="11" rx="2"></rect>
+        <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+        <path d="M12 14v3"></path>
+      </svg>
+      Your taps stay on your device. No tracking, no ads.
+    </div>
+  </main>
+
+  <footer>Built on a phone with AI.</footer>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const DURATION = 10000;
+      const STORAGE_KEY = "snailTapChallengeBest";
+
+      const elements = {
+        timer: document.getElementById("timer"),
+        progressBar: document.getElementById("progressBar"),
+        progressTrack: document.getElementById("progressTrack"),
+        tapButton: document.getElementById("tapButton"),
+        tapWord: document.getElementById("tapWord"),
+        tapHint: document.getElementById("tapHint"),
+        instruction: document.getElementById("instruction"),
+        tapCount: document.getElementById("tapCount"),
+        tapsPerSecond: document.getElementById("tapsPerSecond"),
+        bestScore: document.getElementById("bestScore"),
+        result: document.getElementById("result"),
+        rankTitle: document.getElementById("rankTitle"),
+        resultScore: document.getElementById("resultScore"),
+        resultMessage: document.getElementById("resultMessage"),
+        bestNote: document.getElementById("bestNote"),
+        retryButton: document.getElementById("retryButton"),
+        shareButton: document.getElementById("shareButton")
+      };
+
+      let taps = 0;
+      let running = false;
+      let finished = false;
+      let startTime = 0;
+      let endTime = 0;
+      let frameId = null;
+      let bestScore = loadBestScore();
+
+      function loadBestScore() {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+
+          if (stored === null) return null;
+
+          const parsed = Number(stored);
+
+          return Number.isSafeInteger(parsed) && parsed >= 0
+            ? parsed
+            : null;
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function saveBestScore(score) {
+        try {
+          localStorage.setItem(STORAGE_KEY, String(score));
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      function getRank(score) {
+        if (score >= 80) {
+          return {
+            title: "Legend",
+            message: "Absolutely legendary. Your fingers are on another level."
+          };
+        }
+
+        if (score >= 60) {
+          return {
+            title: "Turbo Snail",
+            message: "Lightning-fast! You left the garden in a cloud of dust."
+          };
+        }
+
+        if (score >= 35) {
+          return {
+            title: "Garden Sprinter",
+            message: "Nice speed! You're becoming a serious tapping contender."
+          };
+        }
+
+        return {
+          title: "Sleepy Snail",
+          message: "Every legend starts somewhere. Warm up those fingers and try again!"
+        };
+      }
+
+      function updateBestDisplay() {
+        elements.bestScore.textContent =
+          bestScore === null ? "—" : String(bestScore);
+      }
+
+      function updateStats(elapsedMs) {
+        elements.tapCount.textContent = String(taps);
+
+        const elapsedSeconds = Math.max(0, elapsedMs) / 1000;
+        const rate = elapsedSeconds > 0 ? taps / elapsedSeconds : 0;
+
+        elements.tapsPerSecond.textContent = rate.toFixed(1);
+      }
+
+      function renderTimer(remainingMs) {
+        const remaining = Math.max(0, remainingMs);
+        elements.timer.textContent = (remaining / 1000).toFixed(1) + "s";
+        elements.progressBar.style.width =
+          (remaining / DURATION * 100) + "%";
+        elements.progressTrack.setAttribute(
+          "aria-valuenow",
+          (remaining / 1000).toFixed(1)
+        );
+
+        elements.timer.classList.toggle("urgent", remaining <= 3000);
+      }
+
+      function startGame() {
+        if (running || finished) return;
+
+        running = true;
+        startTime = performance.now();
+        endTime = startTime + DURATION;
+
+        elements.result.classList.remove("visible");
+        elements.tapButton.disabled = false;
+        elements.tapWord.textContent = "TAP!";
+        elements.tapHint.textContent = "GO GO GO!";
+        elements.instruction.textContent = "Keep tapping until time runs out!";
+        elements.shareButton.disabled = true;
+
+        tick();
+      }
+
+      function tick() {
+        if (!running) return;
+
+        const now = performance.now();
+        const remaining = endTime - now;
+        const elapsed = Math.min(DURATION, now - startTime);
+
+        renderTimer(remaining);
+        updateStats(elapsed);
+
+        if (remaining <= 0) {
+          finishGame();
+          return;
+        }
+
+        frameId = requestAnimationFrame(tick);
+      }
+
+      function finishGame() {
+        if (!running) return;
+
+        running = false;
+        finished = true;
+
+        if (frameId !== null) {
+          cancelAnimationFrame(frameId);
+          frameId = null;
+        }
+
+        renderTimer(0);
+        updateStats(DURATION);
+
+        const isNewBest = bestScore === null || taps > bestScore;
+
+        if (isNewBest) {
+          bestScore = taps;
+          saveBestScore(taps);
+        }
+
+        updateBestDisplay();
+
+        const rank = getRank(taps);
+
+        elements.rankTitle.textContent = rank.title;
+        elements.resultScore.textContent =
+          taps + (taps === 1 ? " tap" : " taps") + " in 10 seconds";
+        elements.resultMessage.textContent = rank.message;
+        elements.bestNote.textContent = isNewBest
+          ? "★ New personal best!"
+          : "Personal best: " + bestScore + " taps";
+
+        elements.tapButton.disabled = true;
+        elements.tapWord.textContent = "DONE!";
+        elements.tapHint.textContent = "TIME'S UP";
+        elements.instruction.textContent = "Challenge complete. How did you do?";
+        elements.result.classList.add("visible");
+        elements.shareButton.disabled = false;
+      }
+
+      function handleTap() {
+        if (finished) return;
+
+        if (!running) {
+          startGame();
+          if (!running) return;
+        }
+
+        const now = performance.now();
+
+        if (now >= endTime) {
+          finishGame();
+          return;
+        }
+
+        taps += 1;
+        updateStats(now - startTime);
+
+        elements.tapButton.classList.add("pressed");
+        window.setTimeout(() => {
+          elements.tapButton.classList.remove("pressed");
+        }, 65);
+      }
+
+      function resetGame() {
+        if (frameId !== null) {
+          cancelAnimationFrame(frameId);
+          frameId = null;
+        }
+
+        taps = 0;
+        running = false;
+        finished = false;
+        startTime = 0;
+        endTime = 0;
+
+        renderTimer(DURATION);
+        updateStats(0);
+        updateBestDisplay();
+
+        elements.tapButton.disabled = false;
+        elements.tapWord.textContent = "TAP!";
+        elements.tapHint.textContent = "10 SECONDS";
+        elements.instruction.textContent =
+          "Tap the snail to start your challenge.";
+        elements.result.classList.remove("visible");
+        elements.shareButton.disabled = true;
+      }
+
+      function shareResult() {
+        if (!finished) return;
+
+        const pageUrl = window.location.href;
+        const message =
+          "I scored " + taps +
+          " taps in 10 seconds. Can you beat me?\n" + pageUrl;
+
+        const shareUrl =
+          "https://wa.me/?text=" + encodeURIComponent(message);
+
+        window.open(shareUrl, "_blank", "noopener,noreferrer");
+      }
+
+      elements.tapButton.addEventListener("click", handleTap);
+      elements.retryButton.addEventListener("click", resetGame);
+      elements.shareButton.addEventListener("click", shareResult);
+
+      // Prevent rapid multi-tap zoom gestures on mobile browsers.
+      document.addEventListener("touchstart", event => {
+        if (event.touches.length > 1) {
+          event.preventDefault();
+        }
+      }, { passive: false });
+
+      let lastTouchEnd = 0;
+
+      document.addEventListener("touchend", event => {
+        const now = Date.now();
+
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+
+        lastTouchEnd = now;
+      }, { passive: false });
+
+      updateBestDisplay();
+      renderTimer(DURATION);
+      updateStats(0);
+    })();
+  </script>
+</body>
+</html>
